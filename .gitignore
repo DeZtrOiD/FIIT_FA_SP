@@ -38,3 +38,10 @@ cmake-build-*
 
 # cmake-build-debug directory
 cmake-build-debug/
+build/
+
+# vs code
+.vscode/
+
+# vcpkg manifest mode
+vcpkg_installed/
