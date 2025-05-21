@@ -2,7 +2,8 @@
   "dependencies": [
     "nlohmann-json",
     "boost-system",
-    "boost-container"
-
+    "boost-container",
+    "cpp-httplib",
+    "crow"
   ]
 }
