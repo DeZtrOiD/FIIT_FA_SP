@@ -12,18 +12,20 @@
 const std::string server_logger::_separator = ","; 
 
 server_logger::~server_logger() noexcept {
-	std::string pid = std::to_string(inner_getpid());
-	auto res = _client.Get("/destroy?pid=" + pid);
+    httplib::Params params;
+    params.emplace("pid", std::to_string(inner_getpid()));
+    _client.Get("/destroy", params, httplib::Headers());
 }
 
 logger& server_logger::log(
     const std::string &text,
     logger::severity severity) & {
 
-	std::string pid = std::to_string(inner_getpid());
-	std::string formatted_message = make_format(text, severity);
-	std::string url = "/log?pid=" + pid + "&sev=" + severity_to_string(severity) + "&message=" + formatted_message;
-	auto res = _client.Get(url);
+        httplib::Params params;
+    params.emplace("pid", std::to_string(server_logger::inner_getpid()));
+    params.emplace("sev", severity_to_string(severity));
+    params.emplace("message", make_format(text, severity));
+	auto res = _client.Get("/log", params, httplib::Headers());
 	return *this;
 }
 
@@ -82,30 +84,19 @@ server_logger::server_logger(const std::string& dest,
         std::string format
     ): _client(dest), _format(std::move(format)), _streams(streams){
 
+	std::string pid = std::to_string(inner_getpid());
+	auto res = _client.Get("/destroy?pid=" + pid);
+
     for (auto& pair : streams) {
 
-        std::ostringstream paths;
-        bool first = true;
-        for (auto i: pair.second.first | std::views::split(_separator)){
-            if (!std::string(std::string_view(i)).empty()){
-                if (!first){
-                    paths << ",";
-                }
-                first = false;
-                paths << std::string(std::string_view(i));
-            }
-        }
-        std::string paths_str = paths.str();
-        std::string pid = std::to_string(server_logger::inner_getpid());
-        std::string sev = severity_to_string(pair.first);
-        std::string console = pair.second.second ? "1" : "0";
+        httplib::Params params;
+        params.emplace("pid", std::to_string(server_logger::inner_getpid()));
+        params.emplace("sev", severity_to_string(pair.first));
+        params.emplace("console", pair.second.second ? "1" : "0");
+        params.emplace("path", pair.second.first);
 
-        auto url = std::string("/init?")
-            + "pid=" + pid
-            + "&sev=" + sev
-            + "&console=" + console
-            + "&paths=" + paths_str;
-        auto res = _client.Get(url);
+        std::string url = "/init";
+        auto res = _client.Get(url, params, httplib::Headers());
     }
 
 }

@@ -17,7 +17,7 @@ class server {
     const std::string _separator = ",";
 
     crow::SimpleApp app;
-
+    // <pid, <severity, <path, console>>>
     std::unordered_map<int, std::unordered_map<logger::severity, std::pair<std::string, bool>>> _streams;
 
     std::shared_mutex _mut;

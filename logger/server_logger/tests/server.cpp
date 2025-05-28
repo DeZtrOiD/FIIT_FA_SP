@@ -14,7 +14,7 @@ server::server(uint16_t port) {
     CROW_ROUTE(app, "/init")([&](const crow::request &req){
         std::string pid_str = req.url_params.get("pid");
         std::string sev_str = req.url_params.get("sev");
-        std::string path_str = req.url_params.get("paths");
+        std::string path_str = req.url_params.get("path");
         std::string console_str = req.url_params.get("console");
 
         std::cout << "INIT PID: " << pid_str <<" SEVERITY: " << sev_str
@@ -46,11 +46,12 @@ server::server(uint16_t port) {
                 std::make_pair(std::string(), false)
             ).first;
         }
-        
-        inner_it->second.first = path_str;                  
-        for (auto token : path_str | std::views::split(_separator)) {
-            std::ofstream stream(std::string(std::string_view(token)));
-        }
+        if (!inner_it->second.first.empty()) {
+            inner_it->second.first += _separator + path_str;
+        } else {
+            inner_it->second.first = path_str;
+        } 
+        std::ofstream stream{path_str};
 
         inner_it->second.second = console;
         return crow::response(200);
