@@ -175,7 +175,7 @@ struct block_metadata* allocator_boundary_tags::bestfit( size_t size ) {
 	struct block_metadata* curBlock = reinterpret_cast<struct block_metadata*>(this->trustedMemoryBegin());
 	
 	struct block_metadata* bestBlock = nullptr;
-	size_t bestSize = ~size_t(0); // Fuck limits.h
+	size_t bestSize = ~size_t(0);
 	do {
 		size_t blockSize = curBlock->size;
 		if( !curBlock->allocated && blockSize >= size && blockSize < bestSize ) {

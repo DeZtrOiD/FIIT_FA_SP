@@ -48,9 +48,6 @@ private:
 
 public:
 
-	struct BuddyAllocatorBlockMetadata* get_first(size_t size) noexcept;
-	struct BuddyAllocatorBlockMetadata* get_worst(size_t size) noexcept;
-	struct BuddyAllocatorBlockMetadata* get_best(size_t size) noexcept;
 	~allocator_boundary_tags() override;
 	
     allocator_boundary_tags(
