@@ -1064,7 +1064,7 @@ binary_search_tree<tkey, tvalue, compare, tag>::prefix_iterator
 template<typename tkey, typename tvalue, compator<tkey> compare, typename tag>
 typename binary_search_tree<tkey, tvalue, compare, tag>::prefix_iterator::reference
 binary_search_tree<tkey, tvalue, compare, tag>::prefix_iterator::operator*() {
-	if (_data != nullptr) {
+	if (_data == nullptr) {
 		throw std::out_of_range("Dereferencing end or invalid iterator");
 	}
 	return _data->data;
@@ -1382,6 +1382,15 @@ bool binary_search_tree<tkey, tvalue, compare, tag>::infix_iterator
 template<typename tkey, typename tvalue, compator<tkey> compare, typename tag>
 bool binary_search_tree<tkey, tvalue, compare, tag>::infix_iterator
 ::operator!=(infix_iterator const& other) const noexcept {
+//   std::cout << "__operator!=: this=" 
+//             << (this->_data 
+//                   ? std::to_string(this->_data->data.first) 
+//                   : std::string("null"))
+//             << "  vs other="
+//             << (other._data ? std::to_string(other._data->data.first) 
+//                        : std::string("null"))
+//             << (_data != other._data ? " true" : " false") <<"\n";
+
 	return _data != other._data;
 }
 
@@ -1389,6 +1398,13 @@ template<typename tkey, typename tvalue, compator<tkey> compare, typename tag>
 typename binary_search_tree<tkey, tvalue, compare, tag>::infix_iterator&
 binary_search_tree<tkey, tvalue, compare, tag>::infix_iterator
 ::operator++() & noexcept {
+  	// std::cout << "++ entering: data = "
+    //       << (_data
+    //             ? std::to_string(_data->data.first)
+    //             : std::string("null"))
+    //       << "\n";
+
+
 	if (_data == nullptr) {
 		return *this;
 	}
@@ -1408,6 +1424,12 @@ binary_search_tree<tkey, tvalue, compare, tag>::infix_iterator
 		}
 		_data = parent;
 	}
+  	// std::cout << "++ exiting: data = "
+    //       << (_data
+    //             ? std::to_string(_data->data.first)
+    //             : std::string("null"))
+    //       << "\n";
+
 
 	return *this;
 }
@@ -1462,7 +1484,7 @@ template<typename tkey, typename tvalue, compator<tkey> compare, typename tag>
 typename binary_search_tree<tkey, tvalue, compare, tag>::infix_iterator::reference
 binary_search_tree<tkey, tvalue, compare, tag>::infix_iterator
 ::operator*() {
-	if (_data != nullptr) {
+	if (_data == nullptr) {
 		throw std::out_of_range("Dereferencing end or invalid iterator");
 	}
 	return _data->data;
@@ -1857,7 +1879,7 @@ template<typename tkey, typename tvalue, compator<tkey> compare, typename tag>
 typename binary_search_tree<tkey, tvalue, compare, tag>::postfix_iterator::reference
 binary_search_tree<tkey, tvalue, compare, tag>::postfix_iterator
 ::operator*() {
-	if (_data != nullptr) {
+	if (_data == nullptr) {
 		throw std::out_of_range("Dereferencing end or invalid iterator");
 	}
 	return _data->data;
@@ -2690,7 +2712,9 @@ binary_search_tree<tkey, tvalue, compare, tag>::lower_bound(const tkey& key) {
 			current = current->right_subtree;
 		}
 	}
-
+	if (result == nullptr) {
+		return infix_iterator(end());
+	}
 	return infix_iterator(result);
 }
 
@@ -2707,7 +2731,9 @@ binary_search_tree<tkey, tvalue, compare, tag>::lower_bound(const tkey& key) con
 			current = current->right_subtree;
 		}
 	}
-
+	if (result == nullptr) {
+		return infix_iterator(end());
+	}
 	return infix_const_iterator(result);
 }
 
@@ -2724,7 +2750,9 @@ binary_search_tree<tkey, tvalue, compare, tag>::upper_bound(const tkey& key) {
 			current = current->right_subtree;
 		}
 	}
-
+	if (result == nullptr) {
+		return infix_iterator(begin());
+	}
 	return infix_iterator(result);
 }
 
@@ -2742,7 +2770,9 @@ binary_search_tree<tkey, tvalue, compare, tag>
 			current = current->right_subtree;
 		}
 	}
-
+	if (result == nullptr) {
+		return infix_iterator(begin());
+	}
 	return infix_const_iterator(result);
 }
 
