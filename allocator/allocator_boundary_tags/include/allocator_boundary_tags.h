@@ -9,26 +9,6 @@
 #include <iterator>
 #include <mutex>
 
-struct alignas(size_t) block_metadata {
-	size_t size : 63;
-	bool allocated : 1;
-	block_metadata* next;
-	block_metadata* prev;
-	struct allocator_metadata* parent;
-} __attribute__( (__packed__) );
-
-struct alignas(size_t) allocator_metadata {
-	logger* loggerObj;
-	std::pmr::memory_resource* allocatorObj;
-	allocator_with_fit_mode::fit_mode fitMode;
-	size_t memSize;
-	std::mutex globalLock;
-	struct block_metadata* firstBlock;
-};
-
-
-
-
 class allocator_boundary_tags final :
     public smart_mem_resource,
     public allocator_test_utils,
@@ -38,6 +18,26 @@ class allocator_boundary_tags final :
 {
 
 private:
+
+    struct allocator_metadata; 
+
+    struct alignas(size_t) block_metadata {
+        size_t size : 63;
+        bool allocated : 1;
+        block_metadata* next;
+        block_metadata* prev;
+        struct allocator_metadata* parent;
+    } __attribute__( (__packed__) );
+
+    struct alignas(size_t) allocator_metadata {
+        logger* loggerObj;
+        std::pmr::memory_resource* allocatorObj;
+        allocator_with_fit_mode::fit_mode fitMode;
+        size_t memSize;
+        std::mutex globalLock;
+        struct block_metadata* firstBlock;
+    };
+
     static constexpr const size_t metadataSize = sizeof(struct allocator_metadata);
 
     static constexpr const size_t allocatedMetadataSize = sizeof(struct block_metadata);

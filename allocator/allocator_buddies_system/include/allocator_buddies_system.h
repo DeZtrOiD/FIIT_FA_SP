@@ -9,19 +9,7 @@
 #include <mutex>
 #include <cmath>
 
-struct BuddyAllocatorMetadata {
-	logger* loggerObj;
-	std::pmr::memory_resource* allocatorObj;
-	allocator_with_fit_mode::fit_mode fitMode;
-	size_t memSize;
-	std::mutex globalLock;
-	struct BuddyAllocatorBlockMetadata* begin;
-};
-
-struct BuddyAllocatorBlockMetadata {
-	bool occupied : 1;
-	uint8_t size : 7;
-} __attribute__( (__packed__) );
+#define CPU_VM_BITS 56 // As of 2025, CPUs support Virtual Memory addressation up to 56 bits. All bits above shall be either zero'ed or one'd
 
 namespace __detail
 {
@@ -49,13 +37,29 @@ class allocator_buddies_system final:
     private logger_guardant,
     private typename_holder
 {
-
 private:
-    void *_trusted_memory;
-	static constexpr const size_t min_k = __detail::nearest_greater_k_of_2(sizeof(struct BuddyAllocatorBlockMetadata));
+
+    struct BuddyBlock {
+        uint8_t size : 7;
+        bool occupied : 1;
+        uint8_t padding1;
+        uintptr_t next: 56;
+        uintptr_t prev: 56;
+    } __attribute__((__packed__));
+	
+    struct BuddyMetadata {
+        logger* loggerObj;
+        std::pmr::memory_resource* allocatorObj;
+        allocator_with_fit_mode::fit_mode fitMode;
+        size_t memSize;
+        std::mutex globalLock;
+        BuddyBlock* blocks[CPU_VM_BITS];
+    };
+
+    void* _trusted_memory;
+    static constexpr const size_t min_k = __detail::nearest_greater_k_of_2(sizeof(BuddyMetadata));
 
 public:
-
     explicit allocator_buddies_system(
             size_t space_size_power_of_two,
             std::pmr::memory_resource *parent_allocator = nullptr,
@@ -73,11 +77,14 @@ public:
     
     allocator_buddies_system &operator=(
         allocator_buddies_system &&other) noexcept;
-	struct BuddyAllocatorBlockMetadata* next_block( struct BuddyAllocatorBlockMetadata* b ) const;
-    ~allocator_buddies_system() override;
-	std::mutex& mutex() const;
-public:
     
+    struct BuddyBlock* next_block(BuddyBlock* b) const;
+    
+    ~allocator_buddies_system() override;
+    
+    std::mutex& mutex() const;
+
+public:
     [[nodiscard]] void *do_allocate_sm(
         size_t size) override;
     
@@ -89,24 +96,17 @@ public:
     inline void set_fit_mode(
         allocator_with_fit_mode::fit_mode mode) override;
 
-
     std::vector<allocator_test_utils::block_info> get_blocks_info() const noexcept override;
 
-struct BuddyAllocatorBlockMetadata* get_best(size_t size) noexcept;
-struct BuddyAllocatorBlockMetadata* get_worst(size_t size) noexcept;
-struct BuddyAllocatorBlockMetadata* get_first(size_t size) noexcept;
-
 private:
-
+    void split_first_block(BuddyBlock* block);
+    struct BuddyBlock* get_buddy(BuddyBlock* b) const;
+    struct BuddyBlock* get_block(size_t size) noexcept;
     
     inline logger *get_logger() const override;
-    
     inline std::string get_typename() const override;
 
     std::vector<allocator_test_utils::block_info> get_blocks_info_inner() const override;
-
-    
 };
 
 #endif //MATH_PRACTICE_AND_OPERATING_SYSTEMS_ALLOCATOR_ALLOCATOR_BUDDIES_SYSTEM_H
-

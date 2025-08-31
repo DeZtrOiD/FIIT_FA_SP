@@ -65,7 +65,7 @@ inline bool allocator_boundary_tags::canMergeNext( struct block_metadata* block)
 
 void allocator_boundary_tags::initBlockMetadata( struct block_metadata* block, struct block_metadata* prev, size_t size ) {
 	if( !block ) return;
-	block->parent = reinterpret_cast<struct allocator_metadata*>(this->_allocatorMemory);
+	block->parent = reinterpret_cast<struct allocator_boundary_tags::allocator_metadata*>(this->_allocatorMemory);
 	block->size = size;
 	
 	if( !prev ) return; // Init run, no block here yet.
@@ -157,7 +157,7 @@ void allocator_boundary_tags::deallocate( void* ptr ) {
 	if( this->canMergePrev(block) ) mergeBlocks( block->prev, block );
 }
 
-struct block_metadata* allocator_boundary_tags::firstfit( size_t size ) {
+struct allocator_boundary_tags::block_metadata* allocator_boundary_tags::firstfit( size_t size ) {
 	struct block_metadata* curBlock = reinterpret_cast<struct block_metadata*>(this->trustedMemoryBegin());
 	debug_with_guard("[BOUNDARY_TAGS] Begin at" + std::to_string(reinterpret_cast<size_t>(curBlock)));
 	do {
@@ -171,7 +171,7 @@ struct block_metadata* allocator_boundary_tags::firstfit( size_t size ) {
 	return nullptr;
 }
 
-struct block_metadata* allocator_boundary_tags::bestfit( size_t size ) {
+struct allocator_boundary_tags::block_metadata* allocator_boundary_tags::bestfit( size_t size ) {
 	struct block_metadata* curBlock = reinterpret_cast<struct block_metadata*>(this->trustedMemoryBegin());
 	
 	struct block_metadata* bestBlock = nullptr;
@@ -196,7 +196,7 @@ bool allocator_boundary_tags::do_is_equal(const std::pmr::memory_resource& other
 }
 
 
-struct block_metadata* allocator_boundary_tags::worstfit( size_t size ) {
+struct allocator_boundary_tags::block_metadata* allocator_boundary_tags::worstfit( size_t size ) {
 	struct block_metadata* curBlock = reinterpret_cast<struct block_metadata*>(this->trustedMemoryBegin());
 	
 	struct block_metadata* worstBlock = nullptr;

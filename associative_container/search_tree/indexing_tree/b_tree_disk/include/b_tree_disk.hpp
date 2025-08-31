@@ -273,19 +273,12 @@ typename B_tree_disk<tkey, tvalue, compare, t>::btree_disk_node B_tree_disk<tkey
         throw B_tree_disk<tkey, tvalue, compare, t>::file_error("Failed to read node header");
     }
 
-    // if (node.size > 1000) {
-    //     throw B_tree_disk<tkey, tvalue, compare, t>::node_error("Node size too large, possibly corrupted data");
-    // }
 
     size_t key_count;
     if (!stream.read(reinterpret_cast<char*>(&key_count), sizeof(key_count))) {
         throw B_tree_disk<tkey, tvalue, compare, t>::file_error("Failed to read key count");
     }
 
-
-    // if (key_count > 1000) {
-    //     throw B_tree_disk<tkey, tvalue, compare, t>::node_error("Key count too large, possibly corrupted data");
-    // }
 
     node.keys.clear();
     for (size_t i = 0; i < key_count; ++i) {
