@@ -9,7 +9,9 @@
 #include <mutex>
 #include <cmath>
 
-#define CPU_VM_BITS 56 // As of 2025, CPUs support Virtual Memory addressation up to 56 bits. All bits above shall be either zero'ed or one'd
+#define CPU_VM_BITS 56
+// As of 2025, CPUs support Virtual Memory addressation up to 56 bits.
+// All bits above shall be either zero'ed or one'd
 
 namespace __detail
 {
@@ -43,8 +45,8 @@ private:
         uint8_t size : 7;
         bool occupied : 1;
         uint8_t padding1;
-        uintptr_t next: 56;
-        uintptr_t prev: 56;
+        uintptr_t next: CPU_VM_BITS;
+        uintptr_t prev: CPU_VM_BITS;
     } __attribute__((__packed__));
 	
     struct BuddyMetadata {

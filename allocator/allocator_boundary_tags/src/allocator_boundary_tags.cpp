@@ -5,7 +5,9 @@ allocator_boundary_tags::~allocator_boundary_tags() {
 	std::lock_guard lock(mutex());
 	size_t totalSize = reinterpret_cast<struct allocator_metadata*>(this->_allocatorMemory)->memSize;
 	if( reinterpret_cast<struct allocator_metadata*>(this->_allocatorMemory)->allocatorObj ) {
-		reinterpret_cast<struct allocator_metadata*>(this->_allocatorMemory)->allocatorObj->deallocate( reinterpret_cast<struct allocator_metadata*>(this->_allocatorMemory), totalSize );
+		reinterpret_cast<struct allocator_metadata*>(this->_allocatorMemory)->allocatorObj->deallocate(
+			reinterpret_cast<struct allocator_metadata*>(this->_allocatorMemory),
+			totalSize);
 	}else{
 		::operator delete( reinterpret_cast<struct allocator_metadata*>(this->_allocatorMemory) );
 	}
@@ -46,7 +48,11 @@ allocator_boundary_tags::allocator_boundary_tags(
 	reinterpret_cast<struct allocator_metadata*>(this->_allocatorMemory)->memSize = memSize;
 	reinterpret_cast<struct allocator_metadata*>(this->_allocatorMemory)->fitMode = fitMode;
 	
-	reinterpret_cast<struct allocator_metadata*>(this->_allocatorMemory)->firstBlock = reinterpret_cast<struct block_metadata*>(recomputeWithOffset(allocatedMemory, allocator_boundary_tags::metadataSize));
+	reinterpret_cast<struct allocator_metadata*>(this->_allocatorMemory)->firstBlock =
+		reinterpret_cast<struct block_metadata*>(recomputeWithOffset(
+			allocatedMemory,
+			allocator_boundary_tags::metadataSize)
+		);
 	
 	reinterpret_cast<struct allocator_metadata*>(this->_allocatorMemory)->firstBlock->size = memSize - sizeof( struct block_metadata );
 	reinterpret_cast<struct allocator_metadata*>(this->_allocatorMemory)->firstBlock->next = nullptr;
@@ -96,7 +102,7 @@ void allocator_boundary_tags::mergeBlocks( struct block_metadata* a, struct bloc
 	
 	acceptor->next = donnor->next;
 	if( acceptor->next ) acceptor->next->prev = acceptor;
-	
+	acceptor->size += donnor->size;
 	debug_with_guard("[BOUNDARY_TAGS] Merged block" + std::to_string(reinterpret_cast<size_t>(acceptor)) + "(acceptor) with " + std::to_string(reinterpret_cast<size_t>(donnor)) + "(donnor)");
 }
 
@@ -200,7 +206,7 @@ struct allocator_boundary_tags::block_metadata* allocator_boundary_tags::worstfi
 	struct block_metadata* curBlock = reinterpret_cast<struct block_metadata*>(this->trustedMemoryBegin());
 	
 	struct block_metadata* worstBlock = nullptr;
-	size_t worstSize = 0; // Fuck limits.h
+	size_t worstSize = 0;
 	do {
 		size_t blockSize = curBlock->size;
 		if( !curBlock->allocated && blockSize >= size && blockSize > worstSize ) {
@@ -249,7 +255,7 @@ std::vector<allocator_test_utils::block_info> allocator_boundary_tags::get_block
 	struct block_metadata* curBlock = reinterpret_cast<struct block_metadata*>(this->trustedMemoryBegin());
 	
 	struct block_metadata* worstBlock = nullptr;
-	size_t worstSize = ~size_t(0); // Fuck limits.h
+	size_t worstSize = ~size_t(0);
 	do {
 		inserter = {curBlock->size + (curBlock->allocated ? 0 : sizeof( struct block_metadata ) ) , curBlock->allocated};
 	} while( (curBlock=curBlock->next) != nullptr );
